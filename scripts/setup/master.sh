@@ -1,30 +1,13 @@
 #!/usr/bin/env bash
 
-su -c "echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables"
+kubeadm init --apiserver-advertise-address $(ip address show eth1 | grep inet | head -n 1 | \
+    sed "s/^[ \t]*//" | cut -d' ' -f2 | cut -d/ -f1)
 
-swapoff -a
+mkdir -p /home/$USER/.kube
+cp -i /etc/kubernetes/admin.conf /home/$USER/.kube/config
+chown $USER:vagrant /home/$USER/.kube/config
 
-cat > /etc/yum.repos.d/kubernetes.repo <<EOF
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kube*
-EOF
+openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //' > synced-folder/token-ca-cert-hash
+kubeadm token list | head -n 2 | tail -1 | cut -d' ' -f1 > synced-folder/token
 
-# Set SELinux in permissive mode (effectively disabling it)
-setenforce 0
-sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-
-yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-
-systemctl enable kubelet && systemctl start kubelet
-
-kubeadm init
-
-mkdir -p $HOME/.kube
-cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-chown $(id -u):$(id -g) $HOME/.kube/config
+KUBECONFIG=/etc/kubernetes/admin.conf kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml

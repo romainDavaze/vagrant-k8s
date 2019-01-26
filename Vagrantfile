@@ -55,6 +55,11 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
         owner: USER,
         mount_options: ["dmode=775,fmode=664"]
 
+      for file in Dir.glob("scripts/tools/*").sort do
+        node.vm.provision "shell", path: file, env: VERSIONS.merge({ :USER => USER})
+      end
+
+      node.vm.provision "shell", path: "scripts/setup/node.sh"
     end
   end
 
