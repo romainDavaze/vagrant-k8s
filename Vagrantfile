@@ -6,6 +6,8 @@ VAGRANTFILE_VERSION = "2"
 NUM_MASTERS = ENV['NUM_MASTERS'] || 1
 NUM_NODES = ENV['NUM_NODES'] || 3
 
+user = "vagrant"
+
 Vagrant.configure(VAGRANTFILE_VERSION) do |config|
 
   # Masters
@@ -18,6 +20,10 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
         v.memory = 2048
         v.cpus = 1
       end
+      master.vm.synced_folder "synced-folder", "/home/#{user}/synced-folder",
+        group: user,
+        owner: user,
+        mount_options: ["dmode=775,fmode=664"]
     end
   end
 
@@ -31,6 +37,10 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
         v.memory = 2048
         v.cpus = 1
       end
+      node.vm.synced_folder "synced-folder", "/home/#{user}/synced-folder",
+        group: user,
+        owner: user,
+        mount_options: ["dmode=775,fmode=664"]
     end
   end
 
