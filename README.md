@@ -5,5 +5,5 @@ Vagrant project used to spawn a kubernetes cluster
 ## Installation
 
 ```
-vagrant plugin install vagrant-vbguest
+vagrant plugin install vagrant-vbguest landrush
 ```

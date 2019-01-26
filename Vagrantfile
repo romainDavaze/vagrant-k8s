@@ -10,6 +10,8 @@ user = "vagrant"
 
 Vagrant.configure(VAGRANTFILE_VERSION) do |config|
 
+  config.landrush.enabled = true
+
   # Masters
   (1..NUM_MASTERS.to_i).each do |i|
     config.vm.define "master-#{i}" do |master|
@@ -20,10 +22,6 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
         v.memory = 2048
         v.cpus = 1
       end
-      master.vm.synced_folder "synced-folder", "/home/#{user}/synced-folder",
-        group: user,
-        owner: user,
-        mount_options: ["dmode=775,fmode=664"]
     end
   end
 
@@ -37,11 +35,15 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
         v.memory = 2048
         v.cpus = 1
       end
-      node.vm.synced_folder "synced-folder", "/home/#{user}/synced-folder",
-        group: user,
-        owner: user,
-        mount_options: ["dmode=775,fmode=664"]
     end
   end
+
+  config.vm.synced_folder "synced-folder", "/home/#{user}/synced-folder",
+    group: user,
+    owner: user,
+    mount_options: ["dmode=775,fmode=664"]
+    
+  config.vm.network "private_network", type: "dhcp"
+
 
 end
